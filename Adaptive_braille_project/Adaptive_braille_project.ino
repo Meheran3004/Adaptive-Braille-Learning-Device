@@ -1,0 +1,728 @@
+/*
+ * Adaptive Braille Learning Module for ESP32
+ *
+ * Braille dots:          Learning: choose Letter or Word learning first.
+ *     1 4                Letter: WORD selects a letter; SPELL repeats it.
+ *     2 5                Word: WORD selects a word; each SPELL press
+ *     3 6                speaks and shows one letter.
+ *                        Quiz: choose Letter Quiz or Word Quiz first.
+ *                        Six dot buttons make an answer; SPELL submits it.
+ */
+
+// ---------- LIBRARIES ----------
+#include <Arduino.h>              // Basic ESP32/Arduino functions.
+#include <HardwareSerial.h>       // UART2 support for the DFPlayer.
+#include <DFRobotDFPlayerMini.h>  // DFPlayer Mini commands.
+#include <LittleFS.h>             // Reads words.txt from ESP32 flash.
+#include <esp_system.h>           // Provides esp_random().
+#include "AudioDurations.h"       // Measured lengths of the SD-card recordings.
+
+// ---------- PIN SETTINGS ----------
+// Buttons connect their GPIO pins to GND when pressed.
+// INPUT_PULLUP makes an unpressed button read HIGH.
+constexpr uint8_t WORD_BTN = 12;   // Select and speak a random word.
+constexpr uint8_t SPELL_BTN = 13;  // Advance a letter or submit an answer.
+constexpr uint8_t MODE_BTN = 21;   // Switch between Learning and Quiz mode.
+
+// Six GPIOs connected to the gates of six vibration-motor MOSFET drivers.
+// Order: Braille dots 1, 2, 3, 4, 5, 6.
+constexpr uint8_t BRAILLE_PINS[6] = {32, 33, 25, 26, 27, 14};
+
+// Six Quiz-mode input buttons, also ordered as Braille dots 1 through 6.
+// GPIO23 avoids GPIO0, which is an ESP32 boot-strapping pin.
+constexpr uint8_t BRAILLE_INPUT_PINS[6] = {15, 23, 4, 5, 18, 19};
+
+// UART2 connections to the DFPlayer Mini.
+constexpr uint8_t DF_RX_PIN = 16;  // ESP32 RX2 receives DFPlayer TX.
+constexpr uint8_t DF_TX_PIN = 17;  // ESP32 TX2 sends to DFPlayer RX via 1 kΩ.
+
+// ---------- TIMING AND LIMITS ----------
+constexpr unsigned long DEBOUNCE_MS = 35;  // Ignore switch bounce for 35 ms.
+constexpr int MAX_WORDS = 255;             // DFPlayer folder-track limit.
+constexpr unsigned long AUDIO_MARGIN_MS = 300; // Allow DFPlayer time to start.
+
+// ---------- ADAPTIVE QUIZ SETTINGS ----------
+// Weight acts like a number of tickets in a draw. More tickets = more likely.
+constexpr uint16_t BASE_WEIGHT = 5;
+constexpr uint16_t WEIGHT_STEP = 1;
+constexpr uint16_t MAX_WEIGHT = 1000; // Prevent overflow in very long sessions.
+static_assert(BASE_WEIGHT > 0 && BASE_WEIGHT <= MAX_WEIGHT, "Invalid weight range");
+static_assert(WEIGHT_STEP > 0, "Weight step must be positive");
+
+// Folder 03 track numbers match the generated recordings, 001 through 013.
+constexpr uint8_t SELECT_MODE_AUDIO = 1;
+constexpr uint8_t LEARNING_MODE_AUDIO = 2;
+constexpr uint8_t QUIZ_MODE_AUDIO = 3;
+constexpr uint8_t CORRECT_AUDIO = 4;
+constexpr uint8_t INCORRECT_AUDIO = 5;
+constexpr uint8_t ENTER_PATTERN_AUDIO = 6;
+constexpr uint8_t LETTER_LEARNING_AUDIO = 7;
+constexpr uint8_t WORD_LEARNING_AUDIO = 8;
+constexpr uint8_t LETTER_QUIZ_AUDIO = 9;
+constexpr uint8_t WORD_QUIZ_AUDIO = 10;
+constexpr uint8_t LETTER_CORRECT_AUDIO = 11;
+constexpr uint8_t LETTER_INCORRECT_AUDIO = 12;
+constexpr uint8_t CONFIRMED_AUDIO = 13; // Shared by Learning and Quiz menus.
+
+// ---------- BRAILLE ALPHABET ----------
+// Each number is a six-bit Braille pattern. Bit 0 is dot 1, bit 1 is dot 2,
+// through bit 5 for dot 6. Example: a = 0x01, so only dot 1 is active.
+constexpr uint8_t BRAILLE[26] = {
+  0x01, 0x03, 0x09, 0x19, 0x11, 0x0B, 0x1B, 0x13, 0x0A,
+  0x1A, 0x05, 0x07, 0x0D, 0x1D, 0x15, 0x0F, 0x1F, 0x17,
+  0x0E, 0x1E, 0x25, 0x27, 0x3A, 0x2D, 0x3D, 0x35
+};
+
+// ---------- BUTTON CLASS ----------
+// A Button object stores its GPIO number and removes electrical button bounce.
+struct Button {
+  uint8_t pin;                  // GPIO number for this physical button.
+  bool raw = HIGH;              // Latest electrical reading from the pin.
+  bool stable = HIGH;           // Reading accepted after the debounce delay.
+  unsigned long changedAt = 0;  // Time at which raw last changed.
+
+  // Example: Button wordButton(12) stores 12 in wordButton.pin.
+  // 'explicit' prevents accidental conversion of a plain number into Button.
+  explicit Button(uint8_t number) : pin(number) {}
+
+  // Configure this GPIO as an input with its internal pull-up enabled.
+  void begin() {
+    pinMode(pin, INPUT_PULLUP);
+    raw = stable = digitalRead(pin);  // Save the initial electrical state.
+    changedAt = millis();
+  }
+
+  // Return true only once when the button is confirmed as newly pressed.
+  bool pressed(unsigned long now) {
+    bool reading = digitalRead(pin);  // State right now: HIGH or LOW.
+
+    // If the electrical state changed, start the debounce timer again.
+    if (reading != raw) {
+      raw = reading;
+      changedAt = now;
+    }
+
+    // Accept the new state only after it stays unchanged for 35 ms.
+    if (stable != raw && now - changedAt >= DEBOUNCE_MS) {
+      stable = raw;
+      // LOW means pressed because the button connects this pin to GND.
+      return stable == LOW;
+    }
+    return false;
+  }
+};
+
+// ---------- WORDS AND PROGRAM STATES ----------
+// A word and the matching DFPlayer track number from SD folder /02.
+struct WordEntry {
+  String word;
+  uint8_t audioNum;
+  uint16_t weight = BASE_WEIGHT; // Integer; stored only in RAM, not flash.
+};
+
+// The MODE button changes this overall program mode.
+enum class Mode { Learning, Quiz };
+
+// Learning has two activities. The learner chooses one before WORD/SPELL
+// control a lesson. This avoids adding another physical button.
+enum class LearningActivity { None, Letter, Word };
+enum class QuizActivity { None, Letter, Word };
+
+// This records the current step inside the selected mode.
+enum class Phase {
+  NoWord,        // No word selected; learner must press WORD.
+  QuizInstruction,// Quiz word finished; play the instruction once.
+  Ready,         // Word and instruction finished; wait for first SPELL press.
+  Answering,     // Quiz mode: learner is selecting dot buttons.
+  WrongFeedback, // Incorrect is playing; SPELL/dot input is ignored temporarily.
+  Correction,    // SPELL manually reveals the correct word.
+  Complete       // Finished; learner must press WORD for another word.
+};
+
+// ---------- OBJECTS AND SHARED VARIABLES ----------
+HardwareSerial dfSerial(2);       // Hardware UART number 2.
+DFRobotDFPlayerMini dfPlayer;     // Object used to command the DFPlayer.
+
+// Main control buttons.
+Button wordButton(WORD_BTN);
+Button spellButton(SPELL_BTN);
+Button modeButton(MODE_BTN);
+
+// Six Quiz-mode dot buttons, in dot order 1 to 6.
+Button dotButtons[6] = {
+  Button(BRAILLE_INPUT_PINS[0]), Button(BRAILLE_INPUT_PINS[1]),
+  Button(BRAILLE_INPUT_PINS[2]), Button(BRAILLE_INPUT_PINS[3]),
+  Button(BRAILLE_INPUT_PINS[4]), Button(BRAILLE_INPUT_PINS[5])
+};
+
+WordEntry wordList[MAX_WORDS];     // Filled from /words.txt in LittleFS.
+int wordCount = 0;                 // Number of valid words loaded.
+int lastWord = -1;                 // Avoids repeating the latest word.
+int currentWordIndex = -1;         // Which wordList entry gets weight updates.
+String currentWord;                // The active word.
+unsigned int letterIndex = 0;      // Position of the current letter.
+uint8_t guess = 0;                 // Six-bit answer chosen in Quiz mode.
+Mode mode = Mode::Learning;        // Learning is the first selectable mode.
+bool modeSelected = false;         // First MODE press confirms Learning mode.
+LearningActivity learningActivity = LearningActivity::None;
+bool learningActivityConfirmed = false;
+QuizActivity quizActivity = QuizActivity::None;
+bool quizActivityConfirmed = false;
+uint16_t letterWeights[26];        // Independent of the word weights, RAM only.
+int currentQuizLetterIndex = -1;   // -1 means no active single-letter question.
+char currentLearningLetter = '\0'; // Active single letter in Letter Learning.
+uint8_t nextLearningLetter = 0;    // Next alphabet index: 0 = A, 25 = Z.
+Phase phase = Phase::NoWord;       // Initially, no word is selected.
+bool audioReady = false;           // True only if DFPlayer starts correctly.
+uint32_t audioStarted = 0;         // Time the last audio command was issued.
+uint32_t audioDuration = 0;        // File duration plus the startup allowance.
+
+// ---------- BRAILLE MOTOR OUTPUT FUNCTIONS ----------
+
+// Switch off all six MOSFET gates, stopping every vibration motor.
+void clearBraille() {
+  for (uint8_t pin : BRAILLE_PINS) {
+    digitalWrite(pin, LOW);
+  }
+}
+
+// Play /folder/track.mp3 only when the DFPlayer is available.
+// Folder 1 = letters, folder 2 = words, folder 3 = spoken prompts.
+void playAudio(uint8_t folder, uint8_t track) {
+  audioDuration = 0;
+  if (audioReady) {
+    dfPlayer.playFolder(folder, track);
+    if (folder == 1 && track >= 1 && track <= 26)
+      audioDuration = LETTER_AUDIO_MS[track - 1];
+    else if (folder == 2 && track >= 1)
+      audioDuration = WORD_AUDIO_MS[track - 1];
+    else if (folder == 3 && track >= 1 && track <= sizeof(PROMPT_AUDIO_MS) / sizeof(PROMPT_AUDIO_MS[0]))
+      audioDuration = PROMPT_AUDIO_MS[track - 1];
+    audioDuration += AUDIO_MARGIN_MS;
+  }
+  audioStarted = millis();
+}
+
+// Read and discard DFPlayer status messages such as "track finished" before
+// they accumulate in UART2. An error is kept visible in Serial Monitor.
+void serviceDfPlayer() {
+  while (audioReady && dfPlayer.available()) {
+    uint8_t type = dfPlayer.readType();
+    uint16_t detail = dfPlayer.read();
+
+    if (type == DFPlayerError) {
+      Serial.print("DFPlayer error: ");
+      Serial.println(detail);
+    }
+  }
+}
+
+// Unsigned subtraction also works when the ESP32 timer wraps around.
+bool audioPlaying(unsigned long now) {
+  return static_cast<uint32_t>(now - audioStarted) < audioDuration;
+}
+
+// Convert one lowercase letter to a Braille pattern and set six motor outputs.
+void showLetter(char letter) {
+  uint8_t pattern = BRAILLE[letter - 'a'];  // a is index 0, b is index 1...
+
+  for (int dot = 0; dot < 6; ++dot) {
+    // Shift one bit to the right, then keep its 0 or 1 value.
+    bool dotIsActive = (pattern >> dot) & 1;
+    digitalWrite(BRAILLE_PINS[dot], dotIsActive);
+  }
+}
+
+// Play the current letter: a = /01/001.mp3, b = /01/002.mp3, etc.
+void announceLetter() {
+  char letter = currentWord[letterIndex];
+  playAudio(1, letter - 'a' + 1);
+  Serial.print("Letter: ");
+  Serial.println(letter);
+}
+
+// Clear all information belonging to the current word or quiz attempt.
+void resetWord() {
+  clearBraille();
+  currentWord = "";
+  currentWordIndex = -1;
+  currentQuizLetterIndex = -1;
+  currentLearningLetter = '\0';
+  letterIndex = 0;
+  guess = 0;
+  phase = Phase::NoWord;
+}
+
+// Advance through A to Z, then start again at A. SPELL does not advance.
+void selectNextLearningLetter() {
+  resetWord();
+
+  uint8_t index = nextLearningLetter;
+  nextLearningLetter = (nextLearningLetter + 1) % 26;
+  currentLearningLetter = static_cast<char>('a' + index);
+  char letterText[2] = {currentLearningLetter, '\0'};
+  currentWord = String(letterText); // Reuses announceLetter().
+  letterIndex = 0;
+  phase = Phase::Ready;
+
+  announceLetter();
+  showLetter(currentLearningLetter);
+  Serial.print("Letter Learning: ");
+  Serial.println(currentLearningLetter);
+}
+
+// ---------- WORD-LIST FUNCTIONS ----------
+
+// Read /words.txt from LittleFS into wordList[].
+void loadWordList() {
+  wordCount = 0;
+  File file = LittleFS.open("/words.txt", "r");
+
+  if (!file) {
+    Serial.println("[ERROR] Upload data/words.txt to LittleFS first.");
+    return;
+  }
+
+  int audioNum = 0; // Matches the numbered audio files in SD folder 02.
+
+  while (file.available() && audioNum < MAX_WORDS) {
+    String word = file.readStringUntil('\n');
+    word.trim();  // Remove spaces and newline characters at either end.
+
+    // Empty lines do not use an audio track number.
+    if (!word.length()) {
+      continue;
+    }
+
+    ++audioNum;           // First actual word is /02/001.mp3.
+    word.toLowerCase();   // The Braille table stores lowercase letters only.
+
+    // Reject digits, punctuation, and other characters outside a-z.
+    bool valid = true;
+    for (unsigned int i = 0; i < word.length(); ++i) {
+      if (word[i] < 'a' || word[i] > 'z') {
+        valid = false;
+      }
+    }
+
+    // Keep later audio numbering correct even if this word is rejected.
+    if (!valid) {
+      Serial.print("[WARN] Skipping nonalphabetic word at track ");
+      Serial.println(audioNum);
+      continue;
+    }
+
+    wordList[wordCount].word = word;
+    wordList[wordCount].audioNum = static_cast<uint8_t>(audioNum);
+    wordList[wordCount].weight = BASE_WEIGHT;
+    ++wordCount;
+  }
+
+  file.close();
+  Serial.print("Words loaded: ");
+  Serial.println(wordCount);
+}
+
+// Reset all weights on startup. EN/RST restarts setup(), so no extra button
+// wiring is needed. Resetting a word or changing modes does NOT reset weights.
+void resetWeights() {
+  for (int i = 0; i < wordCount; ++i) wordList[i].weight = BASE_WEIGHT;
+  for (int i = 0; i < 26; ++i) letterWeights[i] = BASE_WEIGHT;
+}
+
+// Each letter owns as many lottery tickets as its weight. Repeats are allowed.
+int letterForTicket(uint32_t ticket) {
+  for (int i = 0; i < 26; ++i) {
+    if (ticket < letterWeights[i]) return i;
+    ticket -= letterWeights[i];
+  }
+  return -1;
+}
+
+void selectQuizLetter() {
+  resetWord();
+  uint32_t total = 0;
+  for (int i = 0; i < 26; ++i) total += letterWeights[i];
+  if (!total) return;
+  currentQuizLetterIndex = letterForTicket(static_cast<uint32_t>(random(total)));
+  char letterText[2] = {static_cast<char>('a' + currentQuizLetterIndex), '\0'};
+  currentWord = String(letterText); // Reuse answer checking and manual correction.
+  phase = Phase::QuizInstruction;
+  announceLetter(); // Keep motors off until manual correction after an error.
+}
+
+void updateWordWeight(bool correct);
+
+void updateQuizWeight(bool correct) {
+  if (mode != Mode::Quiz) return;
+  if (quizActivity != QuizActivity::Letter) {
+    updateWordWeight(correct);
+    return;
+  }
+  if (currentQuizLetterIndex < 0 || currentQuizLetterIndex >= 26) return;
+  uint16_t &weight = letterWeights[currentQuizLetterIndex];
+  if (correct) {
+    weight = weight - BASE_WEIGHT < WEIGHT_STEP ? BASE_WEIGHT : weight - WEIGHT_STEP;
+  } else {
+    weight = MAX_WEIGHT - weight < WEIGHT_STEP ? MAX_WEIGHT : weight + WEIGHT_STEP;
+  }
+  Serial.print("Letter weight: ");
+  Serial.println(weight);
+}
+
+// Convert a lottery ticket into a word index. A word owns 'weight' tickets.
+int wordForTicket(uint32_t ticket) {
+  for (int i = 0; i < wordCount; ++i) {
+    if (ticket < wordList[i].weight) return i;
+    ticket -= wordList[i].weight;
+  }
+  return -1; // Invalid ticket; normal selection never reaches this case.
+}
+
+int selectWeightedIndex() {
+  uint32_t total = 0;
+  for (int i = 0; i < wordCount; ++i) total += wordList[i].weight;
+  if (!total) return -1;
+  return wordForTicket(static_cast<uint32_t>(random(total)));
+}
+
+// Update once per quiz attempt: a fully correct word earns a decrease;
+// the first wrong pattern earns an increase. Correct words cannot reduce
+// the weight below BASE_WEIGHT. Incorrect answers cannot overflow MAX_WEIGHT.
+void updateWordWeight(bool correct) {
+  if (mode != Mode::Quiz || currentWordIndex < 0 || currentWordIndex >= wordCount) return;
+  uint16_t &weight = wordList[currentWordIndex].weight;
+  if (correct) {
+    weight = weight - BASE_WEIGHT < WEIGHT_STEP ? BASE_WEIGHT : weight - WEIGHT_STEP;
+  } else {
+    weight = MAX_WEIGHT - weight < WEIGHT_STEP ? MAX_WEIGHT : weight + WEIGHT_STEP;
+  }
+  Serial.print("Word weight: ");
+  Serial.println(weight);
+}
+
+// Learning uses uniform random words; Quiz uses the adaptive weighted draw.
+void selectRandomWord() {
+  resetWord();
+
+  if (!wordCount) {
+    Serial.println("[WARN] No valid words loaded.");
+    return;
+  }
+
+  int index;
+
+  // Quiz includes every word, even the previous one. Excluding repeats would
+  // distort the probabilities (two words would otherwise always alternate).
+  if (mode == Mode::Quiz) {
+    index = selectWeightedIndex();
+  } else if (wordCount > 1 && lastWord >= 0 && lastWord < wordCount) {
+    index = random(wordCount - 1);
+    if (index >= lastWord) {
+      ++index; // Skip the previous word's array position.
+    }
+  } else {
+    index = random(wordCount);
+  }
+
+  lastWord = index;
+  currentWordIndex = index;
+  currentWord = wordList[index].word;
+  // Quiz says the instruction once after the selected word; Learning does not.
+  phase = mode == Mode::Quiz ? Phase::QuizInstruction : Phase::Ready;
+  playAudio(2, wordList[index].audioNum);
+
+  Serial.print("Word: ");
+  Serial.println(currentWord);
+  Serial.println("Press SPELL for the first letter.");
+}
+
+// ---------- LEARNING AND CORRECTION ----------
+
+// Speak and physically show exactly one letter per SPELL press.
+void manualLetter() {
+  // No letters remain: clear motors and finish the word.
+  if (letterIndex >= currentWord.length()) {
+    clearBraille();
+    phase = Phase::Complete;
+    Serial.println("Finished. Press WORD for a new word.");
+    return;
+  }
+
+  announceLetter();                       // Speak the letter.
+  showLetter(currentWord[letterIndex]);   // Activate its vibration motors.
+  ++letterIndex;                          // Prepare the following letter.
+
+  // The last vibration pattern stays active until a later control press.
+  if (letterIndex == currentWord.length()) {
+    Serial.println("Last letter. SPELL clears; WORD selects a new word.");
+  }
+}
+
+// ---------- SPELL BUTTON LOGIC ----------
+
+// Decide what a SPELL press means for the current mode and phase.
+void handleSpell(unsigned long now) {
+  // Finish each recording before allowing another SPELL action.
+  if (audioPlaying(now)) return;
+  // SPELL cannot act before a word is selected or after the word is complete.
+  if (phase == Phase::NoWord || phase == Phase::Complete) {
+    Serial.println("Press WORD to select a new letter or word.");
+    return;
+  }
+
+  // Avoid cutting off the Incorrect audio file.
+  if (phase == Phase::WrongFeedback || phase == Phase::QuizInstruction) {
+    return;
+  }
+
+  // Letter Learning keeps one tactile pattern active. SPELL repeats its audio.
+  if (mode == Mode::Learning && learningActivity == LearningActivity::Letter) {
+    if (currentLearningLetter == '\0') {
+      Serial.println("Press WORD to select a letter.");
+      return;
+    }
+    announceLetter();
+    showLetter(currentLearningLetter);
+    Serial.println("Letter repeated.");
+    return;
+  }
+
+  // Word Learning and post-error correction both spell manually.
+  if (mode == Mode::Learning || phase == Phase::Correction) {
+    manualLetter();
+    return;
+  }
+
+  // First SPELL press in Quiz mode: speak the target but do not reveal it.
+  // The Enter-pattern instruction already played after the selected word.
+  if (phase == Phase::Ready) {
+    guess = 0;
+    clearBraille();
+    phase = Phase::Answering;
+    announceLetter();
+    return;
+  }
+
+  // Second SPELL press in Quiz mode: compare the dot pattern to the answer.
+  uint8_t answer = BRAILLE[currentWord[letterIndex] - 'a'];
+  if (guess == answer) {
+    guess = 0;
+    ++letterIndex;
+
+    // Every letter in this word was correct.
+    if (letterIndex == currentWord.length()) {
+      updateQuizWeight(true);
+      phase = Phase::Complete;
+      playAudio(3, quizActivity == QuizActivity::Letter ? LETTER_CORRECT_AUDIO : CORRECT_AUDIO);
+      Serial.println("Correct! Press WORD for a new question.");
+    } else {
+      // A correct answer advances to and speaks the next letter automatically.
+      // The instruction is deliberately not repeated for individual letters.
+      announceLetter();
+    }
+  } else {
+    updateQuizWeight(false);
+    // Wrong answer: reset, play Incorrect, then allow manual correction.
+    guess = 0;
+    letterIndex = 0;
+    clearBraille();
+    playAudio(3, quizActivity == QuizActivity::Letter ? LETTER_INCORRECT_AUDIO : INCORRECT_AUDIO);
+    phase = Phase::WrongFeedback;
+    Serial.println("Incorrect. After feedback, use SPELL to reveal each letter.");
+  }
+}
+
+// ---------- ARDUINO SETUP ----------
+// setup() runs once when the ESP32 starts or resets.
+void setup() {
+  // Keep every vibration motor off before starting other hardware.
+  for (uint8_t pin : BRAILLE_PINS) {
+    digitalWrite(pin, LOW);
+    pinMode(pin, OUTPUT);
+  }
+
+  Serial.begin(115200); // Serial Monitor communication speed.
+  resetWord();
+  mode = Mode::Learning;
+  modeSelected = false;
+  learningActivity = LearningActivity::None;
+  learningActivityConfirmed = false;
+  quizActivity = QuizActivity::None;
+  quizActivityConfirmed = false;
+  nextLearningLetter = 0;
+  lastWord = -1;
+
+  // Configure every button as an INPUT_PULLUP input.
+  wordButton.begin();
+  spellButton.begin();
+  modeButton.begin();
+  for (Button &button : dotButtons) {
+    button.begin();
+  }
+
+  // false means do not format LittleFS if mounting fails.
+  if (LittleFS.begin(false)) {
+    loadWordList();
+  } else {
+    Serial.println("[ERROR] LittleFS mount failed; upload the filesystem.");
+  }
+
+  // Start UART2 at the DFPlayer's normal 9600-baud communication speed.
+  dfSerial.begin(9600, SERIAL_8N1, DF_RX_PIN, DF_TX_PIN);
+  // Do not wait for an acknowledgement for every command. Some DFPlayer
+  // clones can stall when a track-finished status arrives before an ACK.
+  audioReady = dfPlayer.begin(dfSerial, false, true);
+
+  if (audioReady) {
+    dfPlayer.volume(30); // Volume range is 0 to 30.
+  } else {
+    Serial.println("[ERROR] DFPlayer unavailable. Check wiring/SD and restart.");
+  }
+
+  randomSeed(esp_random()); // Make random word choices less predictable.
+  resetWeights();
+  playAudio(3, SELECT_MODE_AUDIO);
+  Serial.println("Select a mode: first MODE press selects Learning; next selects Quiz.");
+}
+
+// ---------- ARDUINO MAIN LOOP ----------
+// loop() runs repeatedly forever after setup() finishes.
+void loop() {
+  serviceDfPlayer(); // Keep UART2 clear before sending another audio command.
+  unsigned long now = millis(); // Used by the debounce and feedback timers.
+
+  // Ask whether each main button was newly pressed during this loop.
+  bool modePressed = modeButton.pressed(now);
+  bool wordPressed = wordButton.pressed(now);
+  bool spellPressed = spellButton.pressed(now);
+
+  // Bits set in toggled represent Quiz dot buttons newly pressed this loop.
+  uint8_t toggled = 0;
+
+  // Always poll dot buttons. A held button cannot become a surprise new press
+  // when the program later enters the Quiz Answering phase.
+  for (int dot = 0; dot < 6; ++dot) {
+    if (dotButtons[dot].pressed(now)) {
+      toggled |= (1 << dot);
+    }
+  }
+
+  // MODE has priority: stop audio, clear activity, then swap the mode.
+  if (modePressed) {
+    if (audioReady) {
+      dfPlayer.stop();
+    }
+    resetWord();
+    if (modeSelected) mode = mode == Mode::Learning ? Mode::Quiz : Mode::Learning;
+    modeSelected = true;
+    quizActivity = QuizActivity::None;
+    quizActivityConfirmed = false;
+    if (mode == Mode::Learning) {
+      learningActivity = LearningActivity::None;
+      learningActivityConfirmed = false;
+    }
+    playAudio(3, mode == Mode::Learning ? LEARNING_MODE_AUDIO : QUIZ_MODE_AUDIO);
+    Serial.println(mode == Mode::Learning
+      ? "Learning mode. Press WORD to choose Letter or Word Learning; press SPELL to confirm."
+      : "Quiz mode. WORD chooses Letter or Word Quiz; SPELL confirms.");
+    return; // Do not process another button in the same loop.
+  }
+
+  // Ignore WORD/SPELL until a mode is selected and the current audio ends.
+  // Polling above still consumes held keys, so ignored presses are not queued.
+  if (!modeSelected || audioPlaying(now)) return;
+
+  // Learning Mode first uses WORD to choose the activity and SPELL to confirm.
+  if (mode == Mode::Learning && !learningActivityConfirmed) {
+    if (wordPressed) {
+      learningActivity = learningActivity == LearningActivity::Letter
+        ? LearningActivity::Word : LearningActivity::Letter;
+      playAudio(3, learningActivity == LearningActivity::Letter
+        ? LETTER_LEARNING_AUDIO : WORD_LEARNING_AUDIO);
+      Serial.println(learningActivity == LearningActivity::Letter
+        ? "Letter Learning selected. Press SPELL to confirm."
+        : "Word Learning selected. Press SPELL to confirm.");
+      return;
+    }
+    if (spellPressed) {
+      if (learningActivity == LearningActivity::None) {
+        Serial.println("Press WORD to choose Letter Learning or Word Learning.");
+      } else {
+        learningActivityConfirmed = true;
+        nextLearningLetter = 0; // Each new Letter Learning session begins at A.
+        resetWord();
+        playAudio(3, CONFIRMED_AUDIO);
+        Serial.println(learningActivity == LearningActivity::Letter
+          ? "Letter Learning confirmed. Press WORD to select a letter."
+          : "Word Learning confirmed. Press WORD to select a word.");
+      }
+    }
+    return;
+  }
+
+  // Quiz uses the same menu controls as Learning. Weights survive menu changes.
+  if (mode == Mode::Quiz && !quizActivityConfirmed) {
+    if (wordPressed) {
+      quizActivity = quizActivity == QuizActivity::Letter ? QuizActivity::Word : QuizActivity::Letter;
+      playAudio(3, quizActivity == QuizActivity::Letter ? LETTER_QUIZ_AUDIO : WORD_QUIZ_AUDIO);
+      Serial.println("Press SPELL to confirm, or WORD to change quiz type.");
+    } else if (spellPressed && quizActivity != QuizActivity::None) {
+      quizActivityConfirmed = true;
+      resetWord();
+      playAudio(3, CONFIRMED_AUDIO);
+      Serial.println("Quiz confirmed. Press WORD for a question.");
+    }
+    return;
+  }
+
+  // WORD starts a new question or learning item.
+  if (wordPressed) {
+    if (mode == Mode::Learning && learningActivity == LearningActivity::Letter) {
+      selectNextLearningLetter();
+    } else if (mode == Mode::Quiz && quizActivity == QuizActivity::Letter) {
+      selectQuizLetter();
+    } else {
+      selectRandomWord();
+    }
+    return;
+  }
+
+  // Quiz says this instruction once, after the selected word finishes.
+  // It does not play after individual letter recordings.
+  if (phase == Phase::QuizInstruction) {
+    playAudio(3, ENTER_PATTERN_AUDIO);
+    // A single-letter question already spoke its target. The next SPELL submits.
+    phase = quizActivity == QuizActivity::Letter ? Phase::Answering : Phase::Ready;
+    return; // Only fresh presses after the prompt can start an answer.
+  }
+  // After Incorrect finishes, SPELL can begin the manual correction flow.
+  if (phase == Phase::WrongFeedback) {
+    phase = Phase::Correction;
+  }
+
+  // Each Quiz dot press flips that bit in guess. XOR (^) changes 0 to 1,
+  // and changes 1 back to 0, so pressing the same dot twice deselects it.
+  if (mode == Mode::Quiz && phase == Phase::Answering) {
+    guess ^= toggled;
+
+    // Print selected dot numbers on Serial Monitor for troubleshooting.
+    if (toggled) {
+      Serial.print("Selected dots: ");
+      for (int dot = 0; dot < 6; ++dot) {
+        if (guess & (1 << dot)) {
+          Serial.print(dot + 1);
+        }
+      }
+      if (!guess) {
+        Serial.print("none");
+      }
+      Serial.println();
+    }
+  }
+
+  // Process SPELL last, after Quiz dot selections from this loop.
+  if (spellPressed) {
+    handleSpell(now);
+  }
+}

@@ -1,0 +1,467 @@
+[
+  {
+    "added_include_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32"
+  },
+  {
+    "added_include_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32"
+  },
+  {
+    "compile": {
+      "source_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+      "depfile_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": "DFRobotDFPlayerMini.h"
+  },
+  {
+    "added_include_path": "C:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini"
+  },
+  {
+    "compile": {
+      "source_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+      "depfile_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": "LittleFS.h"
+  },
+  {
+    "added_include_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src"
+  },
+  {
+    "compile": {
+      "source_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+      "depfile_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": "FS.h"
+  },
+  {
+    "added_include_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src"
+  },
+  {
+    "compile": {
+      "source_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+      "depfile_path": "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\sketch\\Adaptive_braille_project.ino.cpp.merged.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini\\DFRobotDFPlayerMini.cpp",
+      "depfile_path": "D:\\Braille Project\\build\\libraries\\DFRobotDFPlayerMini\\DFRobotDFPlayerMini.cpp.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "C:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini\\DFRobotDFPlayerMini.cpp",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\libraries\\DFRobotDFPlayerMini\\DFRobotDFPlayerMini.cpp.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src\\LittleFS.cpp",
+      "depfile_path": "D:\\Braille Project\\build\\libraries\\LittleFS\\LittleFS.cpp.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src\\LittleFS.cpp",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\libraries\\LittleFS\\LittleFS.cpp.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src\\FS.cpp",
+      "depfile_path": "D:\\Braille Project\\build\\libraries\\FS\\FS.cpp.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src\\FS.cpp",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\libraries\\FS\\FS.cpp.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  },
+  {
+    "compile": {
+      "source_path": "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src\\vfs_api.cpp",
+      "depfile_path": "D:\\Braille Project\\build\\libraries\\FS\\vfs_api.cpp.libsdetect.d"
+    },
+    "compile_task": {
+      "args": [
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp-x32\\2601/bin/xtensa-esp32-elf-g++",
+        "-c",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/cpp_flags",
+        "-w",
+        "-Os",
+        "-Werror=return-type",
+        "-w",
+        "-x",
+        "c++",
+        "-E",
+        "-CC",
+        "-DF_CPU=240000000L",
+        "-DARDUINO=10607",
+        "-DARDUINO_ESP32_DEV",
+        "-DARDUINO_ARCH_ESP32",
+        "-DARDUINO_BOARD=\"ESP32_DEV\"",
+        "-DARDUINO_VARIANT=\"esp32\"",
+        "-DARDUINO_PARTITION_default",
+        "-DARDUINO_HOST_OS=\"windows\"",
+        "-DARDUINO_FQBN=\"esp32:esp32:esp32\"",
+        "-DESP32=ESP32",
+        "-DCORE_DEBUG_LEVEL=0",
+        "-DARDUINO_RUNNING_CORE=1",
+        "-DARDUINO_EVENT_RUNNING_CORE=1",
+        "-DARDUINO_USB_CDC_ON_BOOT=0",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/defines",
+        "-ID:\\Braille Project\\Adaptive_braille_project",
+        "-iprefix",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/include/",
+        "@C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/flags/includes",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-libs\\3.3.11/qio_qspi/include",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\cores\\esp32",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\variants\\esp32",
+        "-IC:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\LittleFS\\src",
+        "-IC:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src",
+        "@D:\\Braille Project\\build/build_opt.h",
+        "@D:\\Braille Project\\build/file_opts",
+        "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.11\\libraries\\FS\\src\\vfs_api.cpp",
+        "-o",
+        "nul",
+        "-MMD",
+        "-MF",
+        "D:\\Braille Project\\build\\libraries\\FS\\vfs_api.cpp.libsdetect.d"
+      ]
+    }
+  },
+  {
+    "missing_include_h": ""
+  }
+]

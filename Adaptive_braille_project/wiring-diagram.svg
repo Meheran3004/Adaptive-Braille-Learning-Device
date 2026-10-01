@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120">
+  <style>
+    text { font-family: Arial, sans-serif; fill: #14213d; }
+    .title { font-size: 31px; font-weight: bold; }
+    .sub { font-size: 17px; fill: #4a5568; }
+    .head { font-size: 20px; font-weight: bold; }
+    .label { font-size: 16px; font-weight: bold; }
+    .small { font-size: 14px; }
+    .tiny { font-size: 12px; }
+    .box { fill: #f8fbff; stroke: #1d4ed8; stroke-width: 3; rx: 16; }
+    .power { fill: #fff7ed; stroke: #ea580c; stroke-width: 3; rx: 14; }
+    .note { fill: #fffbea; stroke: #ca8a04; stroke-width: 2; rx: 12; }
+    .io { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 8; }
+    .button { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 8; }
+    .wire { fill: none; stroke: #2563eb; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .ground { fill: none; stroke: #475569; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .supply { fill: none; stroke: #ea580c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .signal { fill: none; stroke: #7c3aed; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .dash { stroke-dasharray: 8 8; }
+  </style>
+
+  <rect width="1600" height="1120" fill="#ffffff"/>
+  <text class="title" x="55" y="52">Adaptive Braille Learning Module — Wiring Diagram</text>
+  <text class="sub" x="55" y="80">ESP32 Dev Module • DFPlayer Mini • six vibration-motor driver channels • nine pushbuttons</text>
+
+  <!-- ESP32 -->
+  <rect class="box" x="560" y="125" width="370" height="810"/>
+  <text class="head" x="650" y="164">ESP32 DEV MODULE</text>
+  <text class="small" x="671" y="188">3.3 V logic</text>
+  <rect class="io" x="580" y="230" width="160" height="42"/><text class="label" x="595" y="257">GPIO 32 · Dot 1</text>
+  <rect class="io" x="580" y="285" width="160" height="42"/><text class="label" x="595" y="312">GPIO 33 · Dot 2</text>
+  <rect class="io" x="580" y="340" width="160" height="42"/><text class="label" x="595" y="367">GPIO 25 · Dot 3</text>
+  <rect class="io" x="580" y="395" width="160" height="42"/><text class="label" x="595" y="422">GPIO 26 · Dot 4</text>
+  <rect class="io" x="580" y="450" width="160" height="42"/><text class="label" x="595" y="477">GPIO 27 · Dot 5</text>
+  <rect class="io" x="580" y="505" width="160" height="42"/><text class="label" x="595" y="532">GPIO 14 · Dot 6</text>
+  <rect class="io" x="750" y="230" width="160" height="42"/><text class="label" x="765" y="257">GPIO 15 · Input 1</text>
+  <rect class="io" x="750" y="285" width="160" height="42"/><text class="label" x="757" y="312">GPIO 23 · Input 2</text>
+  <rect class="io" x="750" y="340" width="160" height="42"/><text class="label" x="765" y="367">GPIO 4 · Input 3</text>
+  <rect class="io" x="750" y="395" width="160" height="42"/><text class="label" x="765" y="422">GPIO 5 · Input 4</text>
+  <rect class="io" x="750" y="450" width="160" height="42"/><text class="label" x="765" y="477">GPIO 18 · Input 5</text>
+  <rect class="io" x="750" y="505" width="160" height="42"/><text class="label" x="765" y="532">GPIO 19 · Input 6</text>
+  <rect class="io" x="580" y="610" width="160" height="42"/><text class="label" x="597" y="637">GPIO 12 · WORD</text>
+  <rect class="io" x="580" y="665" width="160" height="42"/><text class="label" x="595" y="692">GPIO 13 · SPELL</text>
+  <rect class="io" x="580" y="720" width="160" height="42"/><text class="label" x="595" y="747">GPIO 21 · MODE</text>
+  <rect class="io" x="750" y="610" width="160" height="42"/><text class="label" x="772" y="637">GPIO 16 · RX2</text>
+  <rect class="io" x="750" y="665" width="160" height="42"/><text class="label" x="772" y="692">GPIO 17 · TX2</text>
+  <text class="label" x="595" y="835">3V3</text><text class="label" x="820" y="835">GND</text>
+  <line class="supply" x1="610" y1="850" x2="610" y2="900"/><line class="ground" x1="850" y1="850" x2="850" y2="900"/>
+
+  <!-- Vibration-motor bank -->
+  <rect class="power" x="55" y="125" width="425" height="440"/>
+  <text class="head" x="110" y="163">SIX VIBRATION-MOTOR DRIVER CHANNELS</text>
+  <text class="small" x="95" y="190">Repeat this circuit for dots 1–6.</text>
+  <text class="small" x="95" y="214">GPIO mapping: 32, 33, 25, 26, 27, 14</text>
+  <line class="supply" x1="90" y1="255" x2="420" y2="255"/><text class="label" x="95" y="245">+V MOTOR SUPPLY</text>
+  <rect fill="#fee2e2" stroke="#dc2626" stroke-width="2" x="248" y="278" width="72" height="95" rx="9"/><text class="label" x="252" y="319">MOTOR</text><text class="tiny" x="254" y="340">one dot</text>
+  <line class="supply" x1="284" y1="255" x2="284" y2="278"/>
+  <line class="ground" x1="284" y1="373" x2="284" y2="400"/>
+  <rect fill="#f3e8ff" stroke="#7c3aed" stroke-width="2" x="245" y="400" width="78" height="82" rx="9"/><text class="label" x="258" y="438">N-MOSFET</text><text class="tiny" x="266" y="458">low-side</text>
+  <line class="ground" x1="284" y1="482" x2="284" y2="505"/><line class="ground" x1="90" y1="505" x2="420" y2="505"/><text class="label" x="95" y="530">COMMON GND</text>
+  <path class="signal" d="M 480 251 H 385 V 441 H 323"/><text class="small" x="330" y="431">220 Ω gate resistor</text>
+  <path class="ground" d="M 365 441 V 505"/><text class="small" x="370" y="476">10 kΩ gate pull-down</text>
+  <path class="signal" d="M 480 306 H 400 V 441"/>
+  <path class="signal" d="M 480 361 H 415 V 441"/>
+  <path class="signal" d="M 480 416 H 430 V 441"/>
+  <path class="signal" d="M 480 471 H 445 V 441"/>
+  <path class="signal" d="M 480 526 H 460 V 441"/>
+  <text class="tiny" x="64" y="550">Use a flyback diode across every motor: cathode to +V, anode to MOSFET/motor low side.</text>
+  <path d="M 355 282 H 375 V 370 H 355" fill="none" stroke="#16a34a" stroke-width="3"/><text class="tiny" x="334" y="395">flyback</text>
+
+  <!-- DFPlayer -->
+  <rect class="box" x="1045" y="125" width="460" height="290"/>
+  <text class="head" x="1194" y="164">DFPLAYER MINI</text>
+  <text class="small" x="1090" y="192">microSD: folders 01, 02, 03</text>
+  <rect class="io" x="1080" y="220" width="160" height="42"/><text class="label" x="1110" y="247">TX</text>
+  <rect class="io" x="1080" y="278" width="160" height="42"/><text class="label" x="1110" y="305">RX</text>
+  <text class="label" x="1095" y="355">VCC</text><text class="label" x="1300" y="355">GND</text>
+  <path class="wire" d="M 1045 241 H 975 V 631 H 910"/><text class="small" x="970" y="617">TX → RX2</text>
+  <path class="wire" d="M 1045 299 H 990 V 686 H 910"/><rect fill="#fff" stroke="#2563eb" stroke-width="2" x="963" y="670" width="55" height="31" rx="5"/><text class="tiny" x="973" y="691">1 kΩ</text><text class="small" x="1017" y="715">TX2 → RX</text>
+  <line class="supply" x1="1110" y1="370" x2="1110" y2="395"/><text class="small" x="1080" y="405">stable 5 V supply</text>
+  <line class="ground" x1="1330" y1="370" x2="1330" y2="900"/>
+  <rect fill="#f3e8ff" stroke="#7c3aed" stroke-width="2" x="1272" y="232" width="180" height="55" rx="8"/><text class="label" x="1315" y="265">SPEAKER</text><path class="signal" d="M 1240 250 H 1272"/><path class="signal" d="M 1240 278 H 1272"/>
+
+  <!-- buttons -->
+  <rect class="box" x="1010" y="475" width="535" height="460"/>
+  <text class="head" x="1162" y="514">PUSHBUTTONS</text>
+  <text class="small" x="1060" y="540">Each button: GPIO on one terminal, GND on the other.</text>
+  <text class="small" x="1060" y="563">Firmware uses INPUT_PULLUP; do not add external pull-ups.</text>
+  <rect class="button" x="1045" y="590" width="135" height="45"/><text class="label" x="1064" y="619">WORD · GPIO12</text>
+  <rect class="button" x="1195" y="590" width="135" height="45"/><text class="label" x="1214" y="619">SPELL · GPIO13</text>
+  <rect class="button" x="1345" y="590" width="135" height="45"/><text class="label" x="1365" y="619">MODE · GPIO21</text>
+  <text class="label" x="1060" y="680">QUIZ INPUT CELL</text><text class="small" x="1200" y="680">press to toggle each virtual dot</text>
+  <rect class="button" x="1060" y="700" width="110" height="40"/><text class="label" x="1080" y="726">1 · GPIO15</text>
+  <rect class="button" x="1060" y="755" width="110" height="40"/><text class="label" x="1080" y="781">2 · GPIO2</text>
+  <rect class="button" x="1060" y="810" width="110" height="40"/><text class="label" x="1080" y="836">3 · GPIO4</text>
+  <rect class="button" x="1190" y="700" width="110" height="40"/><text class="label" x="1210" y="726">4 · GPIO5</text>
+  <rect class="button" x="1190" y="755" width="110" height="40"/><text class="label" x="1208" y="781">5 · GPIO18</text>
+  <rect class="button" x="1190" y="810" width="110" height="40"/><text class="label" x="1208" y="836">6 · GPIO19</text>
+  <line class="ground" x1="1045" y1="880" x2="1480" y2="880"/><text class="label" x="1060" y="905">ALL BUTTONS TO COMMON GND</text>
+
+  <!-- power -->
+  <rect class="power" x="65" y="690" width="385" height="245"/>
+  <text class="head" x="122" y="730">POWER AND GROUND</text>
+  <text class="small" x="95" y="763">Use supplies rated for the real motor current.</text>
+  <text class="small" x="95" y="788">ESP32 USB/regulated supply → ESP32 5 V/VIN</text>
+  <text class="small" x="95" y="813">DFPlayer → stable 5 V supply</text>
+  <text class="small" x="95" y="838">Motor supply → motor +V only</text>
+  <text class="label" x="95" y="880">JOIN ALL GROUNDS:</text>
+  <text class="small" x="95" y="904">ESP32 GND • DFPlayer GND • MOSFET source GND • supply negative</text>
+  <path class="ground" d="M 450 900 H 850"/><path class="ground" d="M 850 900 H 1330"/>
+
+  <rect class="note" x="515" y="985" width="1015" height="86"/>
+  <text class="label" x="540" y="1018">Boot-pin note:</text><text class="small" x="655" y="1018">GPIO2, GPIO5, GPIO12 and GPIO15 influence ESP32 boot configuration.</text>
+  <text class="small" x="540" y="1044">Release all buttons before power-on, reset, or upload. Do not drive these pins externally during boot.</text>
+</svg>
